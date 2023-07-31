@@ -59,7 +59,7 @@ unsigned int hex2bcd(unsigned int input)
     unsigned int bit = 0, output = 0;
     for(i=0; input>0; i++){
         bit = input % 10;
-        output += bit * uintpow(16, i);
+        output += bit * uintpow(0x10, i);
         input /= 10;
     }
     return output;
