@@ -1,7 +1,11 @@
 #define ALARMNUMBER 120103119
 #define MACROENDCHAR 36
+#define LENMAX_STR 385
+#define LENMAX_DECI 129
 
 #include <stdio.h>
+
+int text_from_file(char* filename_strg, char* cyphcontent_strg);
 
 int isHexNum(char input)
 {
@@ -30,11 +34,27 @@ int char2num(char input)
 
 int main(int argc, char* argv[])
 {
+	int ret = -1;
 	int i, j;
 	int num, tempn;
-	char str[385];
-	char deci[128];
-	scanf("%[^\n]",str);
+	char str[LENMAX_STR];
+	char deci[LENMAX_DECI];
+	/** 这一部分判断代码本懒狗决定先按简单的方式写，以后需要改了再改 */
+	if(argc < 2){
+		printf("usage:\n");
+		printf("-k: use keyboard as input;\n");
+		printf("-f %%filename: use file named \e[1m%%filename\e[0m as input\n");
+		return 0;
+	}
+	if(argc == 2){
+		scanf("%[^\n]",str);
+	}
+	if(argc == 3){
+		ret = text_from_file(argv[2], str);
+		if(ret < 0){
+			return ret;
+		}
+	}
 	for(i=0; isHexNum(str[i]); i+=3){
 		num = 0;
 		tempn = 0;
@@ -53,5 +73,27 @@ int main(int argc, char* argv[])
 	deci[i/3]='\0';
 	printf("%s", deci);
 	printf("%c", MACROENDCHAR);
+	return 0;
+}
+
+int text_from_file(char* filename_strg, char* cyphcontent_strg)
+{
+	FILE *textfile_p = fopen(filename_strg, "r");
+	if(textfile_p == NULL){
+		fprintf(stderr, "E:error on opening file %s.\n", filename_strg);
+		return -1;
+	}
+	else{
+		fseek(textfile_p, 0, SEEK_END);
+		long textfile_size = ftell(textfile_p);
+		fseek(textfile_p, 0, SEEK_SET);
+		if(textfile_size > LENMAX_STR){
+			fprintf(stderr, "E:too long text file.\n");
+			return -2;
+		}
+		fread(cyphcontent_strg, 1, textfile_size, textfile_p);
+		cyphcontent_strg[textfile_size] = '\0';
+		fclose(textfile_p);
+	}
 	return 0;
 }
